@@ -1,0 +1,7 @@
+Coding: .py .c .cpp .cc .html .css .js .bat .php .java .sql .sh
+Pictures: .jpg .jpeg .gif .png .ico .bmp
+Music: .mp3 .wav .flac
+Videos: .mp4 .avi
+Documents: .pdf .txt
+Packages: .zip
+System: .ini
