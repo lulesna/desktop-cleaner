@@ -2,6 +2,7 @@ import os
 import shutil
 
 DIR_TO_CLEAN = r'C:\Users\lesna\Desktop'
+FILE_NAME = "extensions.txt"
 
 def load_extensions_from_file(fname):
     ext_to_dir = {}
@@ -40,16 +41,16 @@ def get_extension(file):
         print("Brak rozszerzenia")
         return ""
 
-def clean_files():
-    EXT_TO_DIR = load_extensions_from_file("extensions.txt")
-    files = get_files(DIR_TO_CLEAN)
+def clean_files(dir_path):
+    EXT_TO_DIR = load_extensions_from_file(FILE_NAME)
+    files = get_files(dir_path)
     for file in files:
         extension = get_extension(file)
         if extension in EXT_TO_DIR:
             dir_name = EXT_TO_DIR[extension]
-            create_dir_if_not_exists(os.path.join(DIR_TO_CLEAN, dir_name))
+            create_dir_if_not_exists(os.path.join(dir_path, dir_name))
             try:
-                shutil.move(os.path.join(DIR_TO_CLEAN, file), os.path.join(DIR_TO_CLEAN, dir_name, file))
+                shutil.move(os.path.join(dir_path, file), os.path.join(dir_path, dir_name, file))
                 print(f"Przeniesiono: {file} -> {dir_name}/")
             except OSError as e:
                 print(f"Błąd przy przenoszeniu {file}: {e}")
@@ -71,7 +72,7 @@ def add_new_extension(fname):
     if not ext_name.startswith("."):
         ext_name = f".{ext_name}"
 
-    dir_name = input("Podaj nazwę folderu, do którego ma zostać dodane rozszerzenie: ").strip().capitalize()
+    dir_name = input("Podaj nazwę folderu, do którego ma zostać dodane rozszerzenie: ").strip()
 
     with open(fname, "r") as f:
         lines = f.readlines()
@@ -98,6 +99,7 @@ def add_new_extension(fname):
             print("Podano błędną odpowiedź.")
 
 def main():
+    current_path = DIR_TO_CLEAN
     try:
         while True:
             print("""
@@ -109,25 +111,36 @@ def main():
             choice = input("Wybór: ")
 
             if choice == "1":
-                clean_files()
+                clean_files(current_path)
             elif choice == "2":
-                show_current_settings("extensions.txt")
+                show_current_settings(FILE_NAME)
             elif choice == "3":
                 while True:
                     print("""
         Co chcesz zmodyfikować?
         1. Dodaj nowy folder
         2. Dodaj rozszerzenie do istniejącego folderu
-        3. Powrót do menu głównego
+        3. Zmień ścieżkę folderu do posprzątania
+        4. Powrót do menu głównego
                     """)
                     choice_2 = input("Wybór: ")
                     if choice_2 == "1":
-                        add_new_dir("extensions.txt")
+                        add_new_dir(FILE_NAME)
                     elif choice_2 == "2":
-                        add_new_extension("extensions.txt")
+                        add_new_extension(FILE_NAME)
                     elif choice_2 == "3":
+                        print(f"Aktualna ścieżka folderu: {current_path}")
+                        new_path = input("Podaj nową ścieżkę (w takim formacie jak ta powyżej): ")
+                        if os.path.exists(new_path):
+                            current_path = new_path
+                            print(f"Zmieniono ścieżkę na: {current_path}")
+                        else:
+                            print("Ścieżka nie istnieje.")
+                    elif choice_2 == "4":
                         print("Wyjście z menu modyfikacji")
                         break
+                    else:
+                        print("Nieprawidłowy wybór. Wybierz 1-4.")
             elif choice == "4":
                 print("Wyjście z programu")
                 break
