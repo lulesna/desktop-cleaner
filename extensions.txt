@@ -3,5 +3,5 @@ Pictures: .jpg .jpeg .gif .png .ico .bmp
 Music: .mp3 .wav .flac
 Videos: .mp4 .avi
 Documents: .pdf .txt
-Packages: .zip
+Packages: .zip .tar
 System: .ini

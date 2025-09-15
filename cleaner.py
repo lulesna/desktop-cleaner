@@ -30,19 +30,17 @@ def get_files(path):
     for file_or_dir in files_and_dirs:
         if os.path.isfile(os.path.join(path, file_or_dir)):
             files.append(file_or_dir)
-    print(files)
     return files
 
 def get_extension(file):
     extension = os.path.splitext(file)[1]
     if extension:
-        print(extension)
         return extension.lower()
     else:
         print("Brak rozszerzenia")
         return ""
 
-def main():
+def clean_files():
     EXT_TO_DIR = load_extensions_from_file("extensions.txt")
     files = get_files(DIR_TO_CLEAN)
     for file in files:
@@ -55,6 +53,88 @@ def main():
                 print(f"Przeniesiono: {file} -> {dir_name}/")
             except OSError as e:
                 print(f"Błąd przy przenoszeniu {file}: {e}")
+
+
+def show_current_settings(fname):
+    with open(fname, "r") as f:
+        print(f.read())
+
+
+def add_new_dir(fname):
+    dir_name = input("Podaj nazwę dla nowego folderu: ").strip()
+    with open(fname, "a") as f:
+        f.write(f"\n{dir_name}:")
+
+
+def add_new_extension(fname):
+    ext_name = input("Podaj nazwę rozszerzenia, które chcesz dodać, np. .txt: ").strip()
+    if not ext_name.startswith("."):
+        ext_name = f".{ext_name}"
+
+    dir_name = input("Podaj nazwę folderu, do którego ma zostać dodane rozszerzenie: ").strip().capitalize()
+
+    with open(fname, "r") as f:
+        lines = f.readlines()
+
+    found = False
+    for i, line in enumerate(lines):
+        if line.strip().startswith(dir_name + ":"):
+            lines[i] = f"{line.strip()} {ext_name}\n"
+            found = True
+            break
+    if found:
+        with open(fname, "w") as f:
+            f.writelines(lines)
+            print(f"Dodano rozszerzenie {ext_name} do folderu {dir_name}.")
+    else:
+        print(f"Folder {dir_name} nie znaleziony, czy dodać ten folder?")
+        answer = input("T/N: ")
+        if answer.upper() == "T":
+            add_new_dir(fname)
+            print(f"Folder {dir_name} został dodany. Spróbuj ponownie dodać rozszerzenie.")
+        elif answer.upper() == "N":
+            print("Nie dodano rozszerzenia z powodu braku podanego folderu.")
+        else:
+            print("Podano błędną odpowiedź.")
+
+def main():
+    try:
+        while True:
+            print("""
+    1. Uruchom sprzątanie
+    2. Pokaż obecne ustawienia  
+    3. Zarządzaj folderami i rozszerzeniami
+    4. Wyjdź
+                """)
+            choice = input("Wybór: ")
+
+            if choice == "1":
+                clean_files()
+            elif choice == "2":
+                show_current_settings("extensions.txt")
+            elif choice == "3":
+                while True:
+                    print("""
+        Co chcesz zmodyfikować?
+        1. Dodaj nowy folder
+        2. Dodaj rozszerzenie do istniejącego folderu
+        3. Powrót do menu głównego
+                    """)
+                    choice_2 = input("Wybór: ")
+                    if choice_2 == "1":
+                        add_new_dir("extensions.txt")
+                    elif choice_2 == "2":
+                        add_new_extension("extensions.txt")
+                    elif choice_2 == "3":
+                        print("Wyjście z menu modyfikacji")
+                        break
+            elif choice == "4":
+                print("Wyjście z programu")
+                break
+            else:
+                print("Nieprawidłowy wybór. Wybierz 1-4.")
+    except KeyboardInterrupt:
+        pass
 
 
 if __name__ == '__main__':
