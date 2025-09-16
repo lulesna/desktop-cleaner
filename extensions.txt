@@ -1,3 +1,4 @@
+PATH: C:\Users\lesna\Desktop
 Coding: .py .c .cpp .cc .html .css .js .bat .php .java .sql .sh
 Pictures: .jpg .jpeg .gif .png .ico .bmp
 Music: .mp3 .wav .flac

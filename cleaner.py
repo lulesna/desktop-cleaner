@@ -1,21 +1,24 @@
 import os
 import shutil
 
-DIR_TO_CLEAN = r'C:\Users\lesna\Desktop'
 FILE_NAME = "extensions.txt"
 
 def load_extensions_from_file(fname):
     ext_to_dir = {}
+    path = None
     with open(fname, 'r') as f:
         for line in f:
             line = line.strip()
             if line:
-                parts = line.split(':')
-                dir_name = parts[0].strip()
-                extensions = parts[1].strip().split()
-                for ext in extensions:
-                    ext_to_dir[ext] = dir_name
-    return ext_to_dir
+                if line.startswith('PATH:'):
+                    path = line.split(':', 1)[1].strip()
+                else:
+                    parts = line.split(':')
+                    dir_name = parts[0].strip()
+                    extensions = parts[1].strip().split()
+                    for ext in extensions:
+                        ext_to_dir[ext] = dir_name
+    return ext_to_dir, path
 
 def create_dir_if_not_exists(path):
     try:
@@ -41,13 +44,16 @@ def get_extension(file):
         print("Brak rozszerzenia")
         return ""
 
-def clean_files(dir_path):
-    EXT_TO_DIR = load_extensions_from_file(FILE_NAME)
+def clean_files():
+    ext_to_dir, dir_path = load_extensions_from_file(FILE_NAME)
+    if not dir_path:
+        print("Nie znaleziono ścieżki w pliku konfiguracyjnym.")
+        return
     files = get_files(dir_path)
     for file in files:
         extension = get_extension(file)
-        if extension in EXT_TO_DIR:
-            dir_name = EXT_TO_DIR[extension]
+        if extension in ext_to_dir:
+            dir_name = ext_to_dir[extension]
             create_dir_if_not_exists(os.path.join(dir_path, dir_name))
             try:
                 shutil.move(os.path.join(dir_path, file), os.path.join(dir_path, dir_name, file))
@@ -98,8 +104,20 @@ def add_new_extension(fname):
         else:
             print("Podano błędną odpowiedź.")
 
+def save_path_to_file(fname, path):
+    with open(fname, 'r') as f:
+        lines = f.readlines()
+
+    for i, line in enumerate(lines):
+        if line.strip().startswith('PATH:'):
+            lines[i] = f"PATH: {path}\n"
+            break
+
+    with open(fname, 'w') as f:
+        f.writelines(lines)
+
+
 def main():
-    current_path = DIR_TO_CLEAN
     try:
         while True:
             print("""
@@ -111,7 +129,7 @@ def main():
             choice = input("Wybór: ")
 
             if choice == "1":
-                clean_files(current_path)
+                clean_files()
             elif choice == "2":
                 show_current_settings(FILE_NAME)
             elif choice == "3":
@@ -129,13 +147,21 @@ def main():
                     elif choice_2 == "2":
                         add_new_extension(FILE_NAME)
                     elif choice_2 == "3":
+                        current_path = None
+                        with open(FILE_NAME, 'r') as f:
+                            first_line = f.readline()
+                            if first_line.startswith('PATH:'):
+                                current_path = first_line.split(':', 1)[1].strip()
+                            else:
+                                print(f"Ścieżka jest błędnie zapisana w pliku {FILE_NAME}.")
                         print(f"Aktualna ścieżka folderu: {current_path}")
                         new_path = input("Podaj nową ścieżkę (w takim formacie jak ta powyżej): ")
-                        if os.path.exists(new_path):
-                            current_path = new_path
-                            print(f"Zmieniono ścieżkę na: {current_path}")
+                        new_path = os.path.normpath(new_path.strip())
+                        if os.path.isdir(new_path):
+                            save_path_to_file(FILE_NAME, new_path)
+                            print(f"Zmieniono ścieżkę na: {new_path}")
                         else:
-                            print("Ścieżka nie istnieje.")
+                            print("Ścieżka nie istnieje lub nie jest katalogiem.")
                     elif choice_2 == "4":
                         print("Wyjście z menu modyfikacji")
                         break
