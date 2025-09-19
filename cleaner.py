@@ -105,6 +105,12 @@ def add_new_extension(fname):
     if not ext_name.startswith("."):
         ext_name = f".{ext_name}"
 
+    ext_to_dir, _ = load_extensions_from_file(fname)
+    if ext_name in ext_to_dir:
+        current_dir = ext_to_dir[ext_name]
+        print(f"Rozszerzenie {ext_name} już zostało dodane wcześniej do {current_dir}")
+        return
+
     dir_name = input("Podaj nazwę folderu, do którego ma zostać dodane rozszerzenie: ").strip()
 
     with open(fname, "r") as f:
