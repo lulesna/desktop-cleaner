@@ -1,5 +1,6 @@
 import os
 import shutil
+from pprint import pprint
 
 FILE_NAME = "extensions.txt"
 
@@ -62,6 +63,32 @@ def clean_files():
                 print(f"Błąd przy przenoszeniu {file}: {e}")
 
 
+def preview_clean_files():
+    ext_to_dir, dir_path = load_extensions_from_file(FILE_NAME)
+    if not dir_path:
+        print("Nie znaleziono ścieżki w pliku konfiguracyjnym.")
+        return
+    files = get_files(dir_path)
+    print("\n!PODGLĄD SPRZĄTANIA!")
+    to_move = {}
+    ignored = []
+    for file in files:
+        extension = get_extension(file)
+        if extension in ext_to_dir:
+            dir_name = ext_to_dir[extension]
+            if dir_name not in to_move:
+                to_move[dir_name] = []
+            to_move[dir_name].append(file)
+        else:
+            ignored.append(file)
+    print("\nPrzeniesione pliki:")
+    pprint(to_move)
+    print("\nZignorowane pliki:")
+    pprint(ignored)
+    total_to_move = sum(len(files) for files in to_move.values())
+    print(f"\nPodsumowanie: {total_to_move} plików do przeniesienia, {len(ignored)} zignorowanych")
+
+
 def show_current_settings(fname):
     with open(fname, "r") as f:
         print(f.read())
@@ -122,17 +149,20 @@ def main():
         while True:
             print("""
     1. Uruchom sprzątanie
-    2. Pokaż obecne ustawienia  
-    3. Zarządzaj folderami i rozszerzeniami
-    4. Wyjdź
+    2. Symulacja sprzątania
+    3. Pokaż obecne ustawienia  
+    4. Zarządzaj folderami i rozszerzeniami
+    5. Wyjdź
                 """)
             choice = input("Wybór: ")
 
             if choice == "1":
                 clean_files()
             elif choice == "2":
-                show_current_settings(FILE_NAME)
+                preview_clean_files()
             elif choice == "3":
+                show_current_settings(FILE_NAME)
+            elif choice == "4":
                 while True:
                     print("""
         Co chcesz zmodyfikować?
@@ -167,7 +197,7 @@ def main():
                         break
                     else:
                         print("Nieprawidłowy wybór. Wybierz 1-4.")
-            elif choice == "4":
+            elif choice == "5":
                 print("Wyjście z programu")
                 break
             else:
